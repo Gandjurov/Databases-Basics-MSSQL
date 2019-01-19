@@ -83,3 +83,4 @@ SELECT TaxRate FROM Payments
 
 --Delete All Records
 TRUNCATE TABLE Occupancies
+
