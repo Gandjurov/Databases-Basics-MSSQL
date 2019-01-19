@@ -53,6 +53,7 @@ INSERT INTO Employees(FirstName, MiddleName, LastName, JobTitle, DepartmentId, H
 ('Georgi', 'Teziev', 'Ivanov', 'CEO', 2, '2007-12-09', 3000.00),
 ('Peter', 'Pan', 'Pan', 'Intern', 3, '2016-08-28', 599.88)
 
+--Basic Select All Fields and Order Them
 SELECT * FROM Towns
 ORDER BY Name
 SELECT * FROM Departments
@@ -60,3 +61,25 @@ ORDER BY Name
 SELECT * FROM Employees
 ORDER BY Salary DESC
 
+--Basic Select Some Fields 
+SELECT Name FROM Towns
+ORDER BY Name
+SELECT Name FROM Departments
+ORDER BY Name
+SELECT FirstName, LastName, JobTitle, Salary FROM Employees
+ORDER BY Salary DESC
+
+--Increase Employees Salary 
+UPDATE Employees
+SET Salary = Salary * 1.1
+SELECT Salary FROM Employees
+
+--Decrease Tax Rate
+USE Hotel
+UPDATE Payments
+SET TaxRate -= TaxRate * 0.03
+
+SELECT TaxRate FROM Payments
+
+--Delete All Records
+TRUNCATE TABLE Occupancies
