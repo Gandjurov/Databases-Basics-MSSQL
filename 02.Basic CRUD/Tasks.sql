@@ -68,29 +68,68 @@ GO
 CREATE VIEW V_EmployeesSalaries AS
 SELECT FirstName, LastName, Salary
   FROM Employees
-
+GO
 SELECT * FROM V_EmployeesSalaries
 GO
+
 -- 17. Create View Employees with Job Titles 
+CREATE VIEW V_EmployeeNameJobTitle AS
+SELECT FirstName + ' ' + ISNULL(MiddleName + ' ', '') + LastName AS [Full Name], JobTitle
+  FROM Employees
+GO
+SELECT * FROM V_EmployeeNameJobTitle
+GO
 
 -- 18. Distinct Job Titles 
+SELECT DISTINCT JobTitle
+  FROM Employees
 
 -- 19. Find First 10 Started Projects 
+SELECT TOP(10) *
+  FROM Projects
+ORDER BY StartDate, Name
 
 -- 20. Last 7 Hired Employees 
+SELECT TOP(7) FirstName, LastName, HireDate
+  FROM Employees
+ORDER BY HireDate DESC
 
 -- 21. Increase Salaries 
+UPDATE Employees
+   SET Salary *= 1.12
+ WHERE DepartmentID IN (1,2,4,11)
+
+SELECT Salary
+  FROM Employees
 
 -- 22. All Mountain Peaks 
+USE Geography
+
+SELECT PeakName
+  FROM Peaks
+ORDER BY PeakName
 
 -- 23. Biggest Countries by Population 
+SELECT TOP(30) CountryName, [Population]
+  FROM Countries
+ WHERE ContinentCode = 'EU'
+ORDER BY [Population] DESC, CountryName
 
 -- 24. Countries and Currency (Euro / Not Euro) 
+SELECT CountryName, CountryCode,
+	CASE
+	WHEN CurrencyCode = 'EUR' THEN 'Euro'
+	ELSE 'Not Euro'
+	 END AS Currency
+    FROM Countries 
+ORDER BY CountryName
 
 -- 25. All Diablo Characters 
+USE Diablo
 
-
-
+SELECT Name
+  FROM Characters
+ORDER BY Name
 
 
 
