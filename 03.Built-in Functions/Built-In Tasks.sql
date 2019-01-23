@@ -58,7 +58,12 @@ SELECT FirstName, LastName
 
 
 --12. Countries Holding 'A'
+USE Geography
 
+  SELECT CountryName, IsoCode
+    FROM Countries
+   WHERE CountryName LIKE '%a%a%a%'
+ORDER BY IsoCode
 
 --13. Mix of Peak and River Names 
 
