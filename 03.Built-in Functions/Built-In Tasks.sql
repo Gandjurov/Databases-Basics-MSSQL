@@ -9,28 +9,47 @@ SELECT FirstName, LastName
  WHERE LastName LIKE '%ei%'
 
 --03. Find First Names of All Employess
-SELECT *
+SELECT FirstName
   FROM Employees
+ WHERE DepartmentID IN (3, 10) AND DATEPART(YEAR, HireDate) BETWEEN 1995 AND 2005
 
 --04. Find All Employees Except Engineers 
 SELECT FirstName, LastName
   FROM Employees
- WHERE JobTitle not like '%engineer%'
+ WHERE JobTitle NOT LIKE '%engineer%'
 
 --05. Find Towns with Name Length 
-
+SELECT Name
+  FROM Towns
+ WHERE LEN([Name]) IN (5, 6)
+ORDER BY [Name]
 
 --06. Find Towns Starting With 
-
+  SELECT TownId, [Name]
+    FROM Towns
+   WHERE [Name] LIKE '[MKBE]%'
+ORDER BY [Name]
 
 --07. Find Towns Not Starting With 
-
+  SELECT TownId, [Name]
+    FROM Towns
+   WHERE [Name] LIKE '[^RBD]%'
+ORDER BY [Name]
+GO
 
 --08. Create View Employees Hired After 
+CREATE VIEW V_EmployeesHiredAfter2000 AS
+SELECT FirstName, LastName
+  FROM Employees
+ WHERE DATEPART(YEAR, HireDate) > 2000
+GO
 
+SELECT * FROM V_EmployeesHiredAfter2000
 
 --09. Length of Last Name 
-
+SELECT FirstName, LastName
+  FROM Employees
+ WHERE LEN(LastName) = 5
 
 --10. Rank Employees by Salary 
 
