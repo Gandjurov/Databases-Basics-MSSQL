@@ -12,8 +12,10 @@ SELECT DepositGroup, MAX(MagicWandSize) AS LongestMagicWand
 GROUP BY DepositGroup
 
 --04. Smallest Deposit Group per Magic Wand Size
-
-
+SELECT TOP(2) DepositGroup, AVG(MagicWandSize)
+  FROM WizzardDeposits
+GROUP BY DepositGroup 
+ORDER BY DepositGroup
 
 --05. Deposits Sum 
 
