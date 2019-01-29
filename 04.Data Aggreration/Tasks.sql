@@ -70,20 +70,76 @@ SELECT LEFT(FirstName, 1) AS FirstLetter
 GROUP BY LEFT(FirstName, 1)
 
 --11. Average Interest 
+SELECT DepositGroup, IsDepositExpired, AVG(DepositInterest) AS AvarageInterest
+  FROM WizzardDeposits
+ WHERE YEAR(DepositStartDate) >= 1985
+GROUP BY DepositGroup, IsDepositExpired
+ORDER BY DepositGroup DESC, IsDepositExpired
 
 --12. Rich Wizard, Poor Wizard
 
+--First Way
+--SELECT SUM(k.Diff) AS SumDifference
+--  FROM (
+--		SELECT wd.DepositAmount - (SELECT w.DepositAmount FROM WizzardDeposits AS w WHERE w.Id = wd.Id + 1) AS Diff
+--		FROM WizzardDeposits AS wd
+--	   ) AS k
+
+--Second Way
+SELECT SUM (k.SumDiff) AS SumDifference
+  FROM (
+		SELECT DepositAmount - LEAD(DepositAmount, 1) OVER (ORDER BY Id) AS SumDiff
+		  FROM WizzardDeposits
+	   ) AS k
+
 --13. Departments Total Salaries
+SELECT DepartmentID, SUM(Salary) AS TotalSum
+  FROM Employees
+GROUP BY DepartmentID
 
 --14. Employees Minimum Salaries
+SELECT DepartmentID, MIN(Salary) AS TotalSum
+  FROM Employees
+ WHERE DepartmentID IN (2, 5, 7) AND HireDate > '01/01/2000'
+GROUP BY DepartmentID
 
 --15. Employees Average Salaries 
+SELECT * INTO NewEmployeeTable
+  FROM Employees
+ WHERE Salary > 30000
+
+DELETE FROM NewEmployeeTable
+ WHERE ManagerID = 42
+
+UPDATE NewEmployeeTable
+   SET Salary += 5000
+ WHERE DepartmentID = 1
+
+SELECT DepartmentID, AVG(Salary) AS AverageSalary
+ FROM NewEmployeeTable
+GROUP BY DepartmentID
 
 --16. Employees Maximum Salaries 
+SELECT DepartmentID, MAX(Salary) AS MaxSalary
+  FROM Employees
+GROUP BY DepartmentID
+HAVING MAX(Salary) NOT BETWEEN 30000 AND 70000
 
 --17. Employees Count Salaries 
+SELECT COUNT(*)
+  FROM Employees
+ WHERE ManagerID IS NULL
 
 --18. 3rd Highest Salary
+SELECT DISTINCT k.DepartmentID, k.Salary
+  FROM (
+		SELECT DepartmentID, Salary, DENSE_RANK() OVER (PARTITION BY DepartmentId ORDER BY Salary DESC) AS SalaryRank
+		  FROM Employees
+       ) AS k
+ WHERE k.SalaryRank = 3
 
 --19. Salary Challenge
-
+SELECT TOP(10) FirstName, LastName, DepartmentID
+  FROM Employees AS e
+ WHERE Salary > (SELECT AVG(Salary) FROM Employees AS em WHERE em.DepartmentID = e.DepartmentID)
+ORDER BY DepartmentID
