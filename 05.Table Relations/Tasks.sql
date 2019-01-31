@@ -131,11 +131,82 @@ INSERT INTO Teachers ([Name], ManagerID) VALUES
 ('Greta', 101)
 
 --05. Online Store Database 
+CREATE TABLE Cities(
+	CityID INT PRIMARY KEY NOT NULL,
+	Name VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE Customers(
+	CustomerID INT PRIMARY KEY NOT NULL,
+	Name VARCHAR(50) NOT NULL,
+	Birthday DATE,
+	CityID INT FOREIGN KEY REFERENCES Cities(CityID) NOT NULL
+)
+
+CREATE TABLE Orders(
+	OrderID INT PRIMARY KEY NOT NULL,
+	CustomerID INT FOREIGN KEY REFERENCES Customers(CustomerID) NOT NULL
+)
+
+CREATE TABLE ItemTypes(
+	ItemTypeID INT PRIMARY KEY NOT NULL,
+	Name VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE Items (
+	ItemID INT PRIMARY KEY NOT NULL,
+	Name VARCHAR(50) NOT NULL,
+	ItemTypeID INT FOREIGN KEY REFERENCES ItemTypes(ItemTypeID) NOT NULL
+)
+
+CREATE TABLE OrderItems (
+	OrderID INT FOREIGN KEY REFERENCES Orders(OrderID) NOT NULL,
+	ItemID INT FOREIGN KEY REFERENCES Items(ItemID) NOT NULL
+	CONSTRAINT PK_Order_Items PRIMARY KEY (OrderID, ItemID)
+)
 
 --06. University Database 
+CREATE DATABASE Example6
 
+
+USE Example6
+
+CREATE TABLE Majors (
+	MajorID INT PRIMARY KEY NOT NULL,
+	Name VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE Students (
+	StudentID INT PRIMARY KEY NOT NULL,
+	StudentNumber VARCHAR(15) NOT NULL,
+	StudentName VARCHAR(50) NOT NULL,
+	MajorID INT FOREIGN KEY REFERENCES Majors(MajorID)
+)
+
+CREATE TABLE Payments (
+	PaymentID INT PRIMARY KEY NOT NULL,
+	PaymentDate DATETIME NOT NULL,
+	PaymentAmount DECIMAL(6, 2) NOT NULL,
+	StudentID INT FOREIGN KEY REFERENCES Students(StudentID)
+)
+
+CREATE TABLE Subjects (
+	SubjectID INT PRIMARY KEY NOT NULL,
+	SubjectName VARCHAR(35) NOT NULL
+)
+
+CREATE TABLE Agenda (
+	StudentID INT FOREIGN KEY REFERENCES Students(StudentID),
+	SubjectID INT FOREIGN KEY REFERENCES Subjects(SubjectID)
+	CONSTRAINT PK_Agenda PRIMARY KEY (StudentID, SubjectID)
+)
 --07. SoftUni Design
 
 --08. Geography Design
 
 --09. *Peaks in Rila 
+USE Geography
+SELECT m.MountainRange, p.PeakName, p.Elevation FROM Mountains AS m
+JOIN Peaks AS p ON p.MountainId = m.Id
+WHERE m.MountainRange = 'Rila'
+ORDER BY p.Elevation DESC
