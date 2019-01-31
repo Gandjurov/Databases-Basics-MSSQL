@@ -19,7 +19,7 @@ CREATE TABLE Passports
 ALTER TABLE Persons
 ADD CONSTRAINT FK_Persons_Passports FOREIGN KEY (PassportID) REFERENCES Passports(PassportID)
 
-exec sp_changedbowner 'sa'
+--exec sp_changedbowner 'sa'
 
 ALTER TABLE Persons
 ADD UNIQUE(PassportID)
@@ -115,6 +115,20 @@ ADD CONSTRAINT FK_StudentsExams_Students FOREIGN KEY (StudentID) REFERENCES Stud
     CONSTRAINT FK_StudentsExams_Exams FOREIGN KEY (ExamID) REFERENCES Exams(ExamID)
 
 --04. Self-Referencing 
+CREATE TABLE Teachers
+(
+	TeacherID INT PRIMARY KEY IDENTITY(101,1),
+	[Name] VARCHAR(30),
+	ManagerID INT FOREIGN KEY REFERENCES Teachers(TeacherID)
+)
+
+INSERT INTO Teachers ([Name], ManagerID) VALUES
+('John', NULL),
+('Maya', 106),
+('Silvia', 106),
+('Ted', 105),
+('Mark', 101),
+('Greta', 101)
 
 --05. Online Store Database 
 
