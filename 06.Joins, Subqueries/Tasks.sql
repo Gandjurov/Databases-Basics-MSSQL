@@ -15,10 +15,15 @@ JOIN Departments AS d ON e.DepartmentID = d.DepartmentID AND d.[Name] IN ('Sales
 ORDER BY EmployeeID
 
 --04. Employee Departments 
-
+SELECT TOP 5 EmployeeID, FirstName, Salary, d.Name AS DeparmentName FROM Employees AS e
+JOIN Departments AS d ON e.DepartmentID = d.DepartmentID AND e.Salary > 15000
+ORDER BY e.DepartmentID
 
 --05. Employees Without Projects 
-
+SELECT DISTINCT TOP 3 e.EmployeeID, e.FirstName
+  FROM Employees AS e
+RIGHT OUTER JOIN EmployeesProjects AS p ON e.EmployeeID NOT IN (SELECT DISTINCT EmployeeID FROM EmployeesProjects)
+ORDER BY e.EmployeeID
 
 --06. Employees Hired After 
 
