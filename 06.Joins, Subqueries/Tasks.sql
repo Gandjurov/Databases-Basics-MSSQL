@@ -26,13 +26,30 @@ RIGHT OUTER JOIN EmployeesProjects AS p ON e.EmployeeID NOT IN (SELECT DISTINCT 
 ORDER BY e.EmployeeID
 
 --06. Employees Hired After 
-
+SELECT e.FirstName, e.LastName, e.HireDate, d.[Name] AS DeptName FROM Employees AS e
+JOIN Departments AS d ON e.DepartmentID = d.DepartmentID 
+		AND e.HireDate > '1999-01-01' 
+		AND d.[Name] IN ('Sales', 'Finance')
+ORDER BY e.HireDate
 
 --07. Employees With Project 
+SELECT * FROM Projects
 
+SELECT TOP 5 e.EmployeeID, e.FirstName, p.[Name] AS ProjectName
+  FROM Employees AS e
+  JOIN EmployeesProjects AS ep ON e.EmployeeID = ep.EmployeeID
+  JOIN Projects AS p ON ep.ProjectID = p.ProjectID AND p.StartDate > '2002-08-13'
+ORDER BY e.EmployeeID
 
 --08. Employee 24 
-
+SELECT e.EmployeeID, e.FirstName,
+		CASE
+			WHEN p.StartDate >= '2005-01-01' THEN NULL
+			ELSE p.Name
+		END AS ProjectName
+		FROM Employees AS e
+  JOIN EmployeesProjects AS ep ON e.EmployeeID = ep.EmployeeID AND e.EmployeeID = 24
+  JOIN Projects AS p ON p.ProjectID = ep.ProjectID
 
 --09. Employee Manager 
 
