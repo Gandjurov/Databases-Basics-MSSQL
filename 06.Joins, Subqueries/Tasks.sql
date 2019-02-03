@@ -83,9 +83,9 @@ exec sp_changedbowner 'sa'
 
 SELECT c.CountryCode, m.MountainRange, p.PeakName, p.Elevation
   FROM Countries AS c
-  JOIN MountainsCountries AS mc ON mc.MountainId = c.CountryCode
+  JOIN MountainsCountries AS mc ON c.CountryCode = mc.CountryCode AND c.CountryCode = 'BG'
   JOIN Mountains AS m ON m.Id = mc.MountainId
-  JOIN Peaks AS p ON p.MountainId = mc.MountainId AND p..Elevation > 2835
+  JOIN Peaks AS p ON p.MountainId = mc.MountainId AND p.Elevation > 2835
 ORDER BY p.Elevation DESC
 
 --13. Count Mountain Ranges 
