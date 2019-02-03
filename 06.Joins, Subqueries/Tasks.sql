@@ -89,9 +89,19 @@ SELECT c.CountryCode, m.MountainRange, p.PeakName, p.Elevation
 ORDER BY p.Elevation DESC
 
 --13. Count Mountain Ranges 
-
+SELECT c.CountryCode, COUNT(mc.MountainId) AS MountainRanges
+  FROM Countries AS c
+  JOIN MountainsCountries AS mc ON c.CountryCode = mc.CountryCode AND c.CountryName IN ('United States', 'Russia', 'Bulgaria')
+GROUP BY c.CountryCode
 
 --14. Countries With or Without Rivers 
+SELECT TOP 5 c.CountryName, r.RiverName
+  FROM Rivers AS r
+  JOIN CountriesRivers AS rc ON r.Id = rc.RiverId
+ RIGHT OUTER JOIN Countries AS c ON c.CountryCode = rc.CountryCode
+ WHERE c.ContinentCode = 'AF'
+ ORDER BY c.CountryName
+
 
 
 --15. Continents and Currencies
