@@ -52,16 +52,41 @@ SELECT e.EmployeeID, e.FirstName,
   JOIN Projects AS p ON p.ProjectID = ep.ProjectID
 
 --09. Employee Manager 
-
+SELECT e.EmployeeID, e.FirstName, e.ManagerID, e2.FirstName AS ManagerName
+  FROM Employees AS e
+  JOIN Employees AS e2 ON e2.EmployeeID = e.ManagerID AND e.ManagerID IN (3, 7)
+ORDER BY e.EmployeeID
 
 --10. Employees Summary 
-
+SELECT TOP 50 e.EmployeeID, 
+	   CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
+	   CONCAT(e2.FirstName, ' ', e2.LastName) AS ManagerName,
+	   d.[Name] AS DepartmentName
+  FROM Employees AS e
+  JOIN Employees AS e2 ON e2.EmployeeID = e.ManagerID
+  JOIN Departments AS d ON d.DepartmentID = e.DepartmentID
+ORDER BY e.EmployeeID
 
 --11. Min Average Salary 
-
+SELECT 
+	MIN(a.AvarageSalary) AS MinAvarageSalary
+	FROM
+	(
+		SELECT e.DepartmentID,
+			   AVG(e.Salary) AS AvarageSalary
+		  FROM Employees AS e
+	  GROUP BY e.DepartmentID
+	) AS a
 
 --12. Highest Peaks in Bulgaria 
+exec sp_changedbowner 'sa'
 
+SELECT c.CountryCode, m.MountainRange, p.PeakName, p.Elevation
+  FROM Countries AS c
+  JOIN MountainsCountries AS mc ON mc.MountainId = c.CountryCode
+  JOIN Mountains AS m ON m.Id = mc.MountainId
+  JOIN Peaks AS p ON p.MountainId = mc.MountainId AND p..Elevation > 2835
+ORDER BY p.Elevation DESC
 
 --13. Count Mountain Ranges 
 
