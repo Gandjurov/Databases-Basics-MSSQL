@@ -104,15 +104,58 @@ SELECT TOP 5 c.CountryName, r.RiverName
  ORDER BY c.CountryName
 
 --15. Continents and Currencies
-
+SELECT 
+		MostUsedCurrency.ContinentCode,
+		MostUsedCurrency.CurrencyCode,
+		MostUsedCurrency.CurrencyUsage
+  FROM  (
+  SELECT c.ContinentCode,
+         c.CurrencyCode,
+		 COUNT(c.CurrencyCode) AS CurrencyUsage,
+		 DENSE_RANK() OVER (PARTITION BY c.ContinentCode ORDER BY COUNT(c.CurrencyCode) DESC) AS [CurrencyRank]
+	FROM Countries AS c
+GROUP BY c.ContinentCode, c.CurrencyCode
+  HAVING COUNT(c.CurrencyCode) > 1
+) AS MostUsedCurrency
+   WHERE MostUsedCurrency.CurrencyRank = 1
+ORDER BY MostUsedCurrency.ContinentCode, MostUsedCurrency.CurrencyUsage
 
 --16. Countries Without any Mountains 
-
+SELECT COUNT(c.CountryCode) AS [CountryCode]
+FROM Countries AS c
+LEFT OUTER JOIN MountainsCountries AS m ON c.CountryCode = m.CountryCode
+WHERE m.MountainId IS NULL
 
 --17. Highest Peak and Longest River by Country
+SELECT TOP (5) c.CountryName, MAX(p.Elevation) AS MaxElevation, MAX(r.Length) AS MaxRiverLength
+  FROM Countries AS c
+LEFT JOIN MountainsCountries AS mc ON mc.CountryCode = c.CountryCode
+LEFT JOIN Mountains AS m ON m.Id = mc.MountainId
+LEFT JOIN Peaks AS p ON p.MountainId = m.Id
+LEFT JOIN CountriesRivers AS cr ON cr.CountryCode = c.CountryCode
+LEFT JOIN Rivers AS r ON r.Id = cr.RiverId
+ GROUP BY c.CountryName
+ ORDER BY MaxElevation DESC, MaxRiverLength DESC, c.CountryName
 
 
 --18. Highest Peak Name and Elevation by Country
+SELECT TOP(5) k.CountryName,
+	   ISNULL(k.PeakName, '(no highest peak)'),
+	   ISNULL(k.MaxElevation, 0),
+	   ISNULL(k.MountainRange, '(no mountain)')
+  FROM (
+        SELECT c.CountryName,
+			   MAX(p.Elevation) AS MaxElevation,
+			   p.PeakName,
+			   m.MountainRange,
+			   DENSE_RANK() OVER (PARTITION BY c.CountryName ORDER BY MAX(p.Elevation) DESC) AS ElevationRank
+		  FROM Countries AS c
+	 LEFT JOIN MountainsCountries AS mc ON mc.CountryCode = c.CountryCode
+	 LEFT JOIN Mountains AS m ON m.Id = mc.MountainId
+	 LEFT JOIN Peaks AS p ON p.MountainId = m.Id
+	  GROUP BY c.CountryName, p.PeakName, m.MountainRange) AS k
+WHERE k.ElevationRank = 1
+ORDER BY k.CountryName, k.PeakName
 
 
 
