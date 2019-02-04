@@ -22,7 +22,8 @@ ORDER BY e.DepartmentID
 --05. Employees Without Projects 
 SELECT DISTINCT TOP 3 e.EmployeeID, e.FirstName
   FROM Employees AS e
-RIGHT OUTER JOIN EmployeesProjects AS p ON e.EmployeeID NOT IN (SELECT DISTINCT EmployeeID FROM EmployeesProjects)
+LEFT JOIN EmployeesProjects AS p ON e.EmployeeID = p.EmployeeID
+WHERE p.ProjectID IS NULL
 ORDER BY e.EmployeeID
 
 --06. Employees Hired After 
@@ -101,8 +102,6 @@ SELECT TOP 5 c.CountryName, r.RiverName
  RIGHT OUTER JOIN Countries AS c ON c.CountryCode = rc.CountryCode
  WHERE c.ContinentCode = 'AF'
  ORDER BY c.CountryName
-
-
 
 --15. Continents and Currencies
 
