@@ -48,3 +48,44 @@ BEGIN
 
 RETURN @salaryLevel
 END
+GO
+
+--06. Employees by Salary Level 
+CREATE PROC usp_EmployeesBySalaryLevel @SalaryLevel VARCHAR(10)
+AS 
+SELECT FirstName, LastName
+  FROM Employees
+ WHERE dbo.ufn_GetSalaryLevel(Salary) = @SalaryLevel
+
+EXEC usp_EmployeesBySalaryLevel 'Low'
+EXEC usp_EmployeesBySalaryLevel 'Average'
+EXEC usp_EmployeesBySalaryLevel 'High'
+GO
+
+--07. Define Function 
+CREATE FUNCTION ufn_IsWordComprised(@setOfLetters VARCHAR(MAX), @word VARCHAR(MAX))
+RETURNS BIT
+BEGIN
+DECLARE @count INT = 1
+
+WHILE(@count <= LEN(@word))
+BEGIN
+	DECLARE @currentLatter CHAR(1) = SUBSTRING(@word, @count,1)
+	DECLARE @charIndex INT = CHARINDEX(@currentLatter, @setOfLetters)
+
+	IF(@charIndex = 0)
+	BEGIN
+		RETURN 0
+	END
+
+	SET @count += 1
+END
+RETURN 1
+END
+
+GO
+
+SELECT dbo.ufn_IsWordComprised('oistmiahf', 'Sofia')
+SELECT dbo.ufn_IsWordComprised('oistmiahf', 'halves')
+
+--08. Delete Employees and Departments 
