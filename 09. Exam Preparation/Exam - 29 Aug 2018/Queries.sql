@@ -92,7 +92,12 @@ WHERE Id = 48
 
 
 --Querying
+SELECT Id, FirstName 
+  FROM Employees
+ WHERE Salary > 6500
+ORDER BY FirstName, Id
 
-
-
-
+SELECT CONCAT(FirstName, ' ', LastName) AS [Full Name], Phone AS [Phone Number]
+  FROM Employees
+ WHERE LEFT(Phone, 1) IN (3)
+ORDER BY FirstName, Phone
