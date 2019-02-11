@@ -90,14 +90,25 @@ WHERE OrderId = 48
 DELETE FROM Orders
 WHERE Id = 48
 
-
+GO
 --Querying
 SELECT Id, FirstName 
   FROM Employees
  WHERE Salary > 6500
 ORDER BY FirstName, Id
+GO
 
 SELECT CONCAT(FirstName, ' ', LastName) AS [Full Name], Phone AS [Phone Number]
   FROM Employees
  WHERE LEFT(Phone, 1) IN (3)
 ORDER BY FirstName, Phone
+GO
+
+
+EXEC sp_changedbowner 'sa'
+SELECT e.FirstName, e.LastName, COUNT(o.Id) AS [Count]
+  FROM Employees AS e
+  JOIN Orders AS o ON o.EmployeeId = e.Id
+GROUP BY e.FirstName, e.LastName
+ORDER BY [Count] DESC, e.FirstName
+
