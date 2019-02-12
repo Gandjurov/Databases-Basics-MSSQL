@@ -92,23 +92,40 @@ WHERE Id = 48
 
 GO
 --Querying
+--05. Richest People 
 SELECT Id, FirstName 
   FROM Employees
  WHERE Salary > 6500
 ORDER BY FirstName, Id
 GO
 
+--06. Cool Phone Numbers 
 SELECT CONCAT(FirstName, ' ', LastName) AS [Full Name], Phone AS [Phone Number]
   FROM Employees
  WHERE LEFT(Phone, 1) IN (3)
 ORDER BY FirstName, Phone
 GO
 
-
+--07. Employee Statistics 
 EXEC sp_changedbowner 'sa'
 SELECT e.FirstName, e.LastName, COUNT(o.Id) AS [Count]
   FROM Employees AS e
   JOIN Orders AS o ON o.EmployeeId = e.Id
 GROUP BY e.FirstName, e.LastName
 ORDER BY [Count] DESC, e.FirstName
+GO
+
+--08. Hard Workers Club
+SELECT e.FirstName, 
+       e.LastName, 
+	   AVG(DATEDIFF(HOUR, s.CheckIn, s.CheckOut)) AS [Work hours]
+  FROM Employees AS e
+  JOIN Shifts AS s ON s.EmployeeId = e.Id
+GROUP BY e.Id, e.FirstName, e.LastName
+HAVING AVG(DATEDIFF(HOUR, s.CheckIn, s.CheckOut)) > 7
+ORDER BY [Work hours] DESC, e.Id
+GO
+
+--9. The Most Expensive Order
+
 
