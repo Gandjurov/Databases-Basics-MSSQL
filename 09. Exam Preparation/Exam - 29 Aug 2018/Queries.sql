@@ -204,11 +204,26 @@ SELECT k.FullName
 GO
 
 --16. Average Profit per Day 
-
+SELECT DATEPART(DAY, o.DateTime) AS [DayOfMonth]
+	   ,FORMAT(AVG(i.Price * oi.Quantity), 'N2') AS AveragePrice
+  FROM Orders AS o
+  JOIN OrderItems AS oi ON oi.OrderId = o.Id
+  JOIN Items AS i ON i.Id = oi.ItemId
+GROUP BY DATEPART(DAY, o.DateTime)
+ORDER BY [DayOfMonth]
+GO
 
 --17. Top Products 
-
-
+   SELECT i.Name AS [Item]
+   	     ,c.Name AS [Category]
+   	     ,SUM(oi.Quantity) AS [Count]
+   	     ,SUM(oi.Quantity * i.Price) AS [TotalPrice]
+     FROM Items AS i
+     JOIN Categories AS c ON c.Id = i.CategoryId
+LEFT JOIN OrderItems AS oi ON oi.ItemId = i.Id
+ GROUP BY i.Name, c.Name
+ ORDER BY TotalPrice DESC, [Count] DESC
+GO
 --18. Promotion Days 
 
 
