@@ -170,3 +170,49 @@ SELECT TOP(10) CONCAT(e.FirstName, ' ', e.LastName) AS [Full Name],
  WHERE o.DateTime < '2018-06-15'
 GROUP BY e.FirstName, e.LastName
 ORDER BY [Total Price] DESC, [Items] DESC
+GO
+
+--14. Tough days
+   SELECT CONCAT(e.FirstName, ' ', e.LastName) AS [Full Name]
+          ,DATENAME(WEEKDAY, s.CheckIn) AS [Day of week]
+     FROM Employees AS e
+LEFT JOIN Orders AS o ON o.EmployeeId = e.Id
+     JOIN Shifts AS s ON s.EmployeeId = e.Id
+ WHERE o.EmployeeId IS NULL AND DATEDIFF(HOUR, s.CheckIn, s.CheckOut) > 12
+ ORDER BY e.Id
+GO
+
+--15. Top Order per Employee 
+SELECT k.FullName
+       ,DATEDIFF(HOUR, s.CheckIn, s.CheckOut) AS [WorkHours]
+       ,k.[Total Price]
+  FROM (
+   SELECT o.Id AS OrderId
+          ,e.Id AS EmployeeId
+		  ,o.DateTime
+          ,CONCAT(e.FirstName, ' ', e.LastName) AS [FullName]
+		  ,SUM(i.Price * oi.Quantity) AS [Total Price]
+		  ,ROW_NUMBER() OVER (PARTITION BY e.Id ORDER BY SUM(i.Price * oi.Quantity) DESC) AS RowNumber
+     FROM Employees AS e
+     JOIN Orders AS o ON o.EmployeeId = e.Id
+     JOIN OrderItems AS oi ON oi.OrderId = o.Id
+     JOIN Items AS i ON i.Id = oi.ItemId
+ GROUP BY o.Id, e.FirstName, e.LastName, e.Id, o.DateTime) AS k
+     JOIN Shifts AS s ON s.EmployeeId = k.EmployeeId
+ WHERE k.RowNumber = 1 AND k.DateTime BETWEEN s.CheckIn AND s.CheckOut
+ ORDER BY [FullName], [WorkHours] DESC, k.[Total Price] DESC
+GO
+
+--16. Average Profit per Day 
+
+
+--17. Top Products 
+
+
+--18. Promotion Days 
+
+
+--19. Cancel Order 
+
+
+--20. Deleted Orders 
