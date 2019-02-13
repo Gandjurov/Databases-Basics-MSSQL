@@ -259,7 +259,7 @@ BEGIN
 
 	RETURN @firstItemName + ' price: ' + CAST(@firstItemPrice AS VARCHAR(10)) + ' <-> ' +
 	       @secondItemName + ' price: ' + CAST(@secondItemPrice AS VARCHAR(10)) + ' <-> ' +
-		   @thirdItemName + ' price: ' + CAST(@thirdItemPrice AS VARCHAR(10)) + ' <-> '
+		   @thirdItemName + ' price: ' + CAST(@thirdItemPrice AS VARCHAR(10))
 END
 GO
 
@@ -269,6 +269,50 @@ SELECT dbo.udf_GetPromotedProducts('2018-08-01', '2018-08-02', '2018-08-03',13,3
 GO
 
 --19. Cancel Order 
+CREATE PROC usp_CancelOrder(@OrderId INT, @CancelDate DATETIME)
+AS
 
+DECLARE @targetOrder INT = (SELECT Id FROM Orders WHERE Id = @OrderId)
 
+IF (@targetOrder IS NULL)
+BEGIN
+	RAISERROR('The order does not exist!', 16, 1)
+	RETURN
+END
+
+DECLARE @orderDateTime DATETIME = (SELECT [DateTime] FROM Orders WHERE Id = @OrderId)
+
+IF (DATEDIFF(DAY, @orderDateTime, @CancelDate) > 3)
+BEGIN
+	RAISERROR('You cannot cancel the order!', 16, 2)
+	RETURN
+END
+
+DELETE FROM OrderItems
+WHERE OrderId = @OrderId
+
+DELETE FROM Orders
+WHERE Id = @OrderId
+GO
+
+EXEC usp_CancelOrder 1, '2018-06-02'
+SELECT COUNT(*) FROM Orders
+SELECT COUNT(*) FROM OrderItems
+GO
 --20. Deleted Orders 
+CREATE TABLE DeletedOrders
+(
+	OrderId INT, ItemId INT, ItemQuantity INT
+)
+GO
+
+CREATE TRIGGER tr_DeletedOrders ON OrderItems FOR DELETE
+AS
+INSERT INTO DeletedOrders (ItemId, OrderId, ItemQuantity)
+	SELECT ItemId, OrderId, Quantity FROM deleted
+
+DELETE FROM OrderItems
+WHERE OrderId = 5
+
+DELETE FROM Orders
+WHERE Id = 5 
