@@ -216,13 +216,134 @@ SELECT *
  WHERE Id = 1 OR Id = 2
 GO
 
---19. Trigger (Diablo)
-
-
 --20. *Massive Shopping 
+USE Diablo
 
+CREATE PROC usp_BuyItems(@Username VARCHAR(100)) AS
+BEGIN
+	DECLARE @UserId INT = (SELECT Id FROM Users WHERE Username = @Username)
+	DECLARE @GameId INT = (SELECT Id FROM Games WHERE Name = 'Bali')
+	DECLARE @UserGameId INT = (SELECT Id FROM UsersGames WHERE UserId = @UserId AND GameId = @GameId)
+	DECLARE @UserGameLevel INT = (SELECT Level FROM UsersGames WHERE Id = @UserGameId)
+
+	DECLARE @counter INT = 251
+
+	WHILE(@counter <= 539)
+	BEGIN
+		DECLARE @ItemId INT = @counter
+		DECLARE @ItemPrice MONEY = (SELECT Price FROM Items WHERE Id = @ItemId)
+		DECLARE @ItemLevel INT = (SELECT MinLevel FROM Items WHERE Id = @ItemId)
+		DECLARE @UserGameCash MONEY = (SELECT Cash FROM UsersGames WHERE Id = @UserGameId)
+
+		IF(@UserGameCash >= @ItemPrice AND @UserGameLevel >= @ItemLevel)
+		BEGIN
+			UPDATE UsersGames
+			SET Cash -= @ItemPrice
+			WHERE Id = @UserGameId
+
+			INSERT INTO UserGameItems VALUES
+			(@ItemId, @UserGameId)
+		END
+
+		SET @counter += 1
+		
+		IF(@counter = 300)
+		BEGIN
+			SET @counter = 501
+		END
+	END
+END
+
+EXEC usp_BuyItems 'baleremuda'
+EXEC usp_BuyItems 'loosenoise'
+EXEC usp_BuyItems 'inguinalself'
+EXEC usp_BuyItems 'buildingdeltoid'
+EXEC usp_BuyItems 'monoxidecos'
+GO
+
+SELECT * FROM Users AS u
+JOIN UsersGames AS ug
+ON u.Id = ug.UserId
+JOIN Games AS g
+ON ug.GameId = g.Id
+JOIN UserGameItems AS ugi
+ON ug.Id = ugi.UserGameId
+JOIN Items AS i
+ON ugi.ItemId = i.Id
+WHERE g.Name = 'Bali'
+ORDER BY u.Username, i.Name
+GO
+
+
+DECLARE @UserId INT = (SELECT Id FROM Users WHERE Username = 'Stamat')
+DECLARE @GameId INT = (SELECT Id FROM Games WHERE Name = 'Safflower')
+DECLARE @UserGameId INT = (SELECT Id FROM UsersGames WHERE UserId = @UserId AND GameId = @GameId)
+DECLARE @UserGameLevel INT = (SELECT Level FROM UsersGames WHERE Id = @UserGameId)
+DECLARE @ItemStartLevel INT = 11
+DECLARE @ItemEndLevel INT = 12
+DECLARE @AllItemsPrice MONEY = (SELECT SUM(Price) FROM Items WHERE (MinLevel BETWEEN @ItemStartLevel AND @ItemEndLevel)) 
+DECLARE @StamatCash MONEY = (SELECT Cash FROM UsersGames WHERE Id = @UserGameId)
+
+IF(@StamatCash >= @AllItemsPrice)
+BEGIN
+	BEGIN TRAN	
+		UPDATE UsersGames
+		SET Cash -= @AllItemsPrice
+		WHERE Id = @UserGameId
+	
+		INSERT INTO UserGameItems
+		SELECT i.Id, @UserGameId  FROM Items AS i
+		WHERE (i.MinLevel BETWEEN @ItemStartLevel AND @ItemEndLevel)
+	COMMIT
+END
+
+SET @ItemStartLevel = 19
+SET @ItemEndLevel = 21
+SET @AllItemsPrice = (SELECT SUM(Price) FROM Items WHERE (MinLevel BETWEEN @ItemStartLevel AND @ItemEndLevel)) 
+SET @StamatCash = (SELECT Cash FROM UsersGames WHERE Id = @UserGameId)
+
+IF(@StamatCash >= @AllItemsPrice)
+BEGIN
+	BEGIN TRAN
+		UPDATE UsersGames
+		SET Cash -= @AllItemsPrice
+		WHERE Id = @UserGameId
+	
+		INSERT INTO UserGameItems
+		SELECT i.Id, @UserGameId  FROM Items AS i
+		WHERE (i.MinLevel BETWEEN @ItemStartLevel AND @ItemEndLevel)
+	COMMIT
+END
+
+SELECT i.Name AS [Item Name] FROM Users AS u
+JOIN UsersGames AS ug
+ON u.Id = ug.UserId
+JOIN Games AS g
+ON ug.GameId = g.Id
+JOIN UserGameItems AS ugi
+ON ug.Id = ugi.UserGameId
+JOIN Items AS i
+ON ugi.ItemId = i.Id
+WHERE u.Username = 'Stamat' AND g.Name = 'Safflower'
+ORDER BY i.Name
 
 --21. Employees with Three Projects 
+USE SoftUni
+GO
 
+CREATE PROC usp_AssignProject(@employeeId INT, @projectID INT) AS
+BEGIN
+	BEGIN TRAN
+		INSERT INTO EmployeesProjects VALUES
+		(@employeeId, @projectID)
+		DECLARE @EmployeeProjectsCount INT = (SELECT COUNT(*) FROM EmployeesProjects WHERE EmployeeId = @employeeId)
+		IF(@EmployeeProjectsCount > 3)
+		BEGIN
+			ROLLBACK
+			RAISERROR('The employee has too many projects!', 16, 1)
+			RETURN
+		END
+	COMMIT
+END 
 
 --22. Delete Employees 
