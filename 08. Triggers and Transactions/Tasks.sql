@@ -198,6 +198,25 @@ SELECT *
 GO
 
 --18. Money Transfer 
+CREATE PROC usp_TransferMoney (@senderId INT, @receiverId INT, @amount DECIMAL(15,4))
+AS
+BEGIN TRANSACTION
+
+EXEC usp_WithdrawMoney @senderId, @amount
+EXEC usp_DepositMoney @receiverId, @amount
+
+COMMIT
+GO
+
+EXEC usp_TransferMoney 1, 2, 600
+GO
+
+SELECT *
+  FROM Accounts
+ WHERE Id = 1 OR Id = 2
+GO
+
+--19. Trigger (Diablo)
 
 
 --20. *Massive Shopping 
