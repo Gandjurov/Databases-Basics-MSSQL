@@ -97,10 +97,17 @@ WHERE AccountId = 47
 
 
 --05. Bulgarian Cities 
-
+SELECT Id, Name
+  FROM Cities
+ WHERE CountryCode = 'BG'
+ORDER BY Name
 
 --06. People Born After 1991 
-
+SELECT FirstName + ' ' + ISNULL(MiddleName + ' ', '') + LastName AS [Full Name]
+       ,YEAR(BirthDate) AS BirthYear
+  FROM Accounts
+ WHERE YEAR(BirthDate) > 1991
+ORDER BY YEAR(BirthDate) DESC, FirstName
 
 --07. EEE-Mails 
 
