@@ -137,10 +137,26 @@ WHERE r.Type = 'First Class'
 ORDER BY r.Price DESC, r.Id
 
 --10. Longest and Shortest Trips 
-
+SELECT a.Id AS AccountId
+	   ,a.FirstName + ' ' + a.LastName AS FullName
+	   ,MAX(DATEDIFF(DAY, t.ArrivalDate, t.ReturnDate)) AS LongestTrip
+	   ,MIN(DATEDIFF(DAY, t.ArrivalDate, t.ReturnDate)) AS ShortestTrip
+  FROM Accounts AS a
+  JOIN AccountsTrips AS at ON at.AccountId = a.Id
+  JOIN Trips AS t ON t.Id = at.TripId
+ WHERE a.MiddleName IS NULL AND t.CancelDate IS NULL
+GROUP BY a.Id, a.FirstName, a.LastName
+ORDER BY LongestTrip DESC, a.Id
 
 --11. Metropolis 
-
+SELECT TOP(5) c.Id
+	   ,c.Name
+	   ,c.CountryCode
+	   ,COUNT(a.Id) AS Accounts
+  FROM Cities AS c
+  JOIN Accounts AS a ON c.Id = a.CityId
+GROUP BY c.Id, c.Name, c.CountryCode 
+ORDER BY Accounts DESC
 
 --12. Romantic Getaways 
 
