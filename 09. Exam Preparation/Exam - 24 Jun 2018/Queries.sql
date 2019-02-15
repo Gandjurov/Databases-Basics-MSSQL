@@ -110,13 +110,31 @@ SELECT FirstName + ' ' + ISNULL(MiddleName + ' ', '') + LastName AS [Full Name]
 ORDER BY YEAR(BirthDate) DESC, FirstName
 
 --07. EEE-Mails 
-
+SELECT a.FirstName, a.LastName, FORMAT(a.BirthDate, 'MM-dd-yyyy'), c.Name, a.Email 
+  FROM Accounts AS a
+  JOIN Cities AS c ON c.Id = a.CityId 
+ WHERE Email LIKE 'e%'
+ORDER BY c.Name DESC
 
 --08. City Statistics 
+--EXEC sp_changedbowner 'sa'
 
+SELECT c.Name, COUNT(h.Id) AS Hotels
+  FROM Cities AS c
+LEFT JOIN Hotels AS h ON h.CityId = c.Id
+GROUP BY c.Name
+ORDER BY Hotels DESC, c.Name
 
 --09. Expensive First Class Rooms 
-
+SELECT r.Id
+	   ,r.Price
+	   ,h.Name AS Hotel
+	   ,c.Name AS City
+  FROM Rooms AS r
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+WHERE r.Type = 'First Class'
+ORDER BY r.Price DESC, r.Id
 
 --10. Longest and Shortest Trips 
 
