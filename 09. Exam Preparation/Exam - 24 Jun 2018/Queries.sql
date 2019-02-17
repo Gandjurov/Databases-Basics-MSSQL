@@ -204,13 +204,57 @@ GROUP BY t.Id, h.Name, r.Type, t.CancelDate
 ORDER BY r.Type, t.Id
 
 --15. Top Travelers 
-
+SELECT Temp.Id
+	   ,Temp.Email
+	   ,Temp.CountryCode
+	   ,Temp.Trips
+  FROM 
+(
+  SELECT a.Id
+	   ,a.Email
+	   ,c.CountryCode
+	   ,COUNT(t.Id) AS Trips
+	   ,DENSE_RANK() OVER (PARTITION BY c.CountryCode ORDER BY COUNT(t.Id) DESC, a.Id) AS TripsRank
+  FROM Accounts AS a
+  JOIN AccountsTrips AS at ON at.AccountId = a.Id
+  JOIN Trips AS t ON t.Id = at.TripId
+  JOIN Rooms AS r ON r.Id = t.RoomId
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+GROUP BY a.Id, a.Email, c.CountryCode
+) AS Temp
+WHERE Temp.TripsRank = 1
+ORDER BY Temp.Trips DESC, Temp.Id
 
 --16. Luggage Fees 
-
+SELECT TripId
+	   ,SUM(Luggage) AS Luggage
+	   ,CASE
+		WHEN SUM(Luggage) > 5 THEN CONCAT('$', SUM(Luggage) * 5)
+		ELSE '$0'
+END AS Fee
+  FROM AccountsTrips
+GROUP BY TripId
+HAVING SUM(Luggage) > 0
+ORDER BY SUM(Luggage) DESC
 
 --17. GDPR Violation 
-
+SELECT t.Id
+	   ,FirstName + ' ' + ISNULL(MiddleName + ' ', '') + LastName AS [Full Name]
+       ,ac.Name AS [From]
+	   ,c.Name AS [To]
+	   ,CASE
+	    WHEN t.CancelDate IS NULL THEN CONCAT(DATEDIFF(DAY, t.ArrivalDate, t.ReturnDate), ' days')
+		ELSE 'Canceled'
+		END AS Duration
+  FROM Trips AS t
+  JOIN AccountsTrips AS at ON at.TripId = t.Id
+  JOIN Accounts AS a ON a.Id = at.AccountId
+  JOIN Cities AS ac ON ac.Id = a.CityId
+  JOIN Rooms AS r ON r.Id = t.RoomId
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+ORDER BY [Full Name], t.Id
 
 --18. Available Room 
 
