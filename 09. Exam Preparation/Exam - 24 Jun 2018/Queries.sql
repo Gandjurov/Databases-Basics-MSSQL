@@ -174,10 +174,34 @@ GROUP BY a.Id, a.Email, c.Name
 ORDER BY Trips DESC, Id
 
 --13. Lucrative Destinations 
+SELECT TOP(10) c.Id
+	   ,c.Name AS [Name]
+	   ,SUM(h.BaseRate + r.Price) AS [Total Revenue]
+	   ,Count(t.Id) AS Trips
+  FROM Trips AS t
+  JOIN Rooms AS r ON r.Id = t.RoomId
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+ WHERE YEAR(t.BookDate) = 2016
+GROUP BY c.Id, c.Name
+ORDER BY [Total Revenue] DESC, Trips DESC
 
 
 --14. Trip Revenues 
-
+SELECT t.Id
+       ,h.Name
+	   ,r.Type
+	   ,CASE 
+	    WHEN t.CancelDate IS NULL THEN SUM(h.BaseRate + r.Price)
+		ELSE 0.00
+		END AS Revenue
+  FROM Trips AS t
+  JOIN AccountsTrips AS at ON at.TripId = t.Id
+  JOIN Rooms AS r ON r.Id = t.RoomId
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+GROUP BY t.Id, h.Name, r.Type, t.CancelDate
+ORDER BY r.Type, t.Id
 
 --15. Top Travelers 
 
