@@ -159,7 +159,19 @@ GROUP BY c.Id, c.Name, c.CountryCode
 ORDER BY Accounts DESC
 
 --12. Romantic Getaways 
-
+SELECT a.Id AS Id
+       ,a.Email AS Email
+	   ,c.Name AS City
+	   ,COUNT(t.Id) AS Trips
+  FROM Accounts AS a
+  JOIN AccountsTrips AS at ON at.AccountId = a.Id
+  JOIN Trips AS t ON t.Id = at.TripId
+  JOIN Rooms AS r ON r.Id = t.RoomId
+  JOIN Hotels AS h ON h.Id = r.HotelId
+  JOIN Cities AS c ON c.Id = h.CityId
+ WHERE a.CityId = h.CityId
+GROUP BY a.Id, a.Email, c.Name
+ORDER BY Trips DESC, Id
 
 --13. Lucrative Destinations 
 
