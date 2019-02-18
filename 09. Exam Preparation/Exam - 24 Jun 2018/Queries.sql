@@ -281,7 +281,59 @@ END
 GO
 
 SELECT dbo.udf_GetAvailableRoom(112, '2011-12-17', 2)
+GO
 --19. Switch Room 
 
+CREATE PROCEDURE usp_SwitchRoom(@TripId INT, @TargetRoomId INT)
+AS
+BEGIN
+	
+	DECLARE @HotelTrip INT = (SELECT TOP(1) r.HotelId
+								FROM Trips AS t
+								JOIN Rooms AS r ON r.Id = t.RoomId
+								WHERE t.Id = @TripId)
+
+	DECLARE @TargetRoomHotelId INT = (SELECT TOP(1) r.HotelId
+								FROM Rooms AS r
+								WHERE r.Id = @TargetRoomId)
+
+IF (@HotelTrip != @TargetRoomHotelId)
+BEGIN
+	RAISERROR ('Target room is in another hotel!', 16, 1)
+	RETURN
+END
+
+DECLARE @TripsAccountBeds INT = (SELECT COUNT(*) FROM AccountsTrips WHERE TripId = @TripId)
+
+IF(@TripsAccountBeds > (SELECT r.Beds FROM Rooms AS r WHERE r.Id = @TargetRoomId))
+BEGIN
+	RAISERROR ('Not enough beds in target room!', 16, 2)
+	RETURN
+END
+
+	UPDATE Trips
+	SET RoomId = @TargetRoomId
+	WHERE Id = @TripId
+END
+GO
+
+EXEC usp_SwitchRoom 10, 11
+SELECT RoomId FROM Trips WHERE Id = 10
+
+EXEC usp_SwitchRoom 10, 7
+
+EXEC usp_SwitchRoom 10, 8
+GO
 
 --20. Cancel Trip 
+CREATE TRIGGER tr_CancelTrip
+ON Trips
+INSTEAD OF DELETE
+AS
+UPDATE Trips
+SET CancelDate = GETDATE()
+WHERE Id IN (SELECT Id FROM deleted WHERE CancelDate IS NULL)
+
+GO
+DELETE FROM Trips
+WHERE Id IN (48, 49, 50)
