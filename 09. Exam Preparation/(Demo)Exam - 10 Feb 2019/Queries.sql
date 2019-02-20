@@ -86,4 +86,55 @@ WHERE JourneyId IN (1,2,3)
 DELETE FROM Journeys 
 WHERE Id IN (1,2,3)
 
+--05. Select all travel cards
+SELECT CardNumber, JobDuringJourney
+  FROM TravelCards
+ORDER BY CardNumber
+
+--06. Select All Colonists
+SELECT Id, FirstName + ' ' + LastName AS FullName, Ucn
+  FROM Colonists
+ORDER BY FirstName, LastName, Id
+
+--07. Select All Military Journeys 
+
+
+--08. Select All Pilots 
+
+
+--09. Count Colonists 
+
+
+--10. Select The Fastest Spaceship 
+
+
+--11. Select Spaceships With Pilots 
+
+
+--12. Select All Educational Mission 
+
+
+--13. Planets And Journeys 
+
+
+--14. Extract The Shortest Journey 
+
+
+--15. Select The Less Popular Job 
+
+
+--16. Select Special Colonists 
+
+
+--17. Planets and Spaceports 
+
+
+--18. Get Colonists Count 
+
+
+--19. Change Journey Purpose 
+
+
+--20. Deleted Journeys 
+
 
