@@ -97,19 +97,40 @@ SELECT Id, FirstName + ' ' + LastName AS FullName, Ucn
 ORDER BY FirstName, LastName, Id
 
 --07. Select All Military Journeys 
-
+SELECT Id, FORMAT(JourneyStart, 'dd/MM/yyyy') AS JourneyStart, FORMAT(JourneyEnd, 'dd/MM/yyyy') AS JourneyEnd
+  FROM Journeys
+ WHERE Purpose = 'Military'
+ORDER BY JourneyStart
 
 --08. Select All Pilots 
-
+SELECT c.Id, c.FirstName + ' ' + c.LastName AS full_name
+  FROM Colonists AS c
+  JOIN TravelCards AS t ON t.ColonistId = c.Id
+ WHERE t.JobDuringJourney = 'Pilot'
+ORDER BY c.Id 
 
 --09. Count Colonists 
-
+SELECT COUNT(c.Id) AS [Count]
+  FROM TravelCards AS t
+  JOIN Colonists AS c ON c.Id = t.ColonistId
+  JOIN Journeys AS j ON j.Id = t.JourneyId
+ WHERE j.Purpose = 'Technical'
 
 --10. Select The Fastest Spaceship 
-
+SELECT TOP(1) ss.Name AS SpaceshipName, sp.Name AS SpaceportName
+  FROM Journeys AS j
+  JOIN Spaceships AS ss ON ss.Id = j.SpaceshipId
+  JOIN Spaceports AS sp ON sp.Id = j.DestinationSpaceportId
+ORDER BY ss.LightSpeedRate DESC
 
 --11. Select Spaceships With Pilots 
-
+SELECT ss.Name AS [Name], ss.Manufacturer
+  FROM TravelCards AS t
+  JOIN Journeys AS j ON j.Id = t.JourneyId
+  JOIN Spaceships AS ss ON ss.Id = j.SpaceshipId
+  JOIN Colonists AS c ON c.Id = t.ColonistId
+ WHERE t.JobDuringJourney = 'Pilot' AND c.BirthDate >= '01/01/1989'
+ORDER BY [Name]
 
 --12. Select All Educational Mission 
 
