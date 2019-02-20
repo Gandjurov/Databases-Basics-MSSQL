@@ -133,7 +133,12 @@ SELECT ss.Name AS [Name], ss.Manufacturer
 ORDER BY [Name]
 
 --12. Select All Educational Mission 
-
+SELECT p.Name AS PlanetName, sp.Name AS SpaceportName
+  FROM Journeys AS j
+  JOIN Spaceports AS sp ON sp.Id = j.DestinationSpaceportId
+  JOIN Planets AS p ON p.Id = sp.PlanetId
+ WHERE j.Purpose = 'Educational'
+ORDER BY sp.Name DESC
 
 --13. Planets And Journeys 
 
