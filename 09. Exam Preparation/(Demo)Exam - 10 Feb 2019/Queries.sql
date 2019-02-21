@@ -161,7 +161,17 @@ GROUP BY j.Id, p.Name, sp.Name, j.Purpose
 ORDER BY MIN(j.JourneyEnd - j.JourneyStart)
 
 --15. Select The Less Popular Job 
-
+SELECT TOP(1) j.Id AS JourneyId, t.JobDuringJourney AS JobName
+  FROM TravelCards AS t
+  JOIN Journeys AS j ON j.Id = t.JourneyId
+  JOIN Colonists AS c ON c.Id = t.ColonistId
+ WHERE t.JourneyId = (
+					    SELECT TOP(1) j.Id 
+						  FROM Journeys AS j 
+					  ORDER BY DATEDIFF(MINUTE, j.JourneyStart, j.JourneyEnd) DESC
+					 )
+GROUP BY j.Id, t.JobDuringJourney
+ORDER BY COUNT(t.JobDuringJourney)
 
 --16. Select Special Colonists 
 
