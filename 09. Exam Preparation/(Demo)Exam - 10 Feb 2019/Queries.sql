@@ -141,10 +141,24 @@ SELECT p.Name AS PlanetName, sp.Name AS SpaceportName
 ORDER BY sp.Name DESC
 
 --13. Planets And Journeys 
-
+SELECT p.Name AS PlanetName, COUNT(j.Id) AS JourneysCount
+  FROM Journeys AS j
+  JOIN Spaceports AS sp ON sp.Id = j.DestinationSpaceportId
+  JOIN Planets AS p ON p.Id = sp.PlanetId
+GROUP BY p.Name
+ORDER BY JourneysCount DESC, PlanetName 
 
 --14. Extract The Shortest Journey 
-
+SELECT TOP(1)
+	   j.Id,
+	   p.Name AS PlanetName,
+	   sp.Name AS SpaceportName,
+	   j.Purpose AS JourneyPurpose
+  FROM Journeys AS j
+  JOIN Spaceports AS sp ON sp.Id = j.DestinationSpaceportId
+  JOIN Planets AS p ON p.Id = sp.PlanetId
+GROUP BY j.Id, p.Name, sp.Name, j.Purpose
+ORDER BY MIN(j.JourneyEnd - j.JourneyStart)
 
 --15. Select The Less Popular Job 
 
