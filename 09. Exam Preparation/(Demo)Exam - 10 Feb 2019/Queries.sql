@@ -177,10 +177,34 @@ ORDER BY COUNT(t.JobDuringJourney)
 
 
 --17. Planets and Spaceports 
-
+SELECT p.Name AS Name, COUNT(sp.Id) AS [Count]
+  FROM Spaceports AS sp
+RIGHT JOIN Planets AS p ON p.Id = sp.PlanetId
+GROUP BY p.Name
+ORDER BY [Count] DESC, p.Name
+GO
 
 --18. Get Colonists Count 
+CREATE FUNCTION dbo.udf_GetColonistsCount(@PlanetName VARCHAR(30))
+RETURNS INT
+AS 
+BEGIN
+DECLARE @CountAllColonists INT = (SELECT COUNT(sp.Id) AS [Count]
+									FROM TravelCards AS t
+									JOIN Colonists AS c ON c.Id = t.ColonistId
+									JOIN Journeys AS j ON j.Id = t.JourneyId
+									JOIN Spaceports AS sp ON sp.Id = j.DestinationSpaceportId
+									JOIN Planets AS p ON p.Id = sp.PlanetId
+								   WHERE p.Name = @PlanetName
+							     )
 
+
+RETURN @CountAllColonists
+END
+GO
+
+SELECT dbo.udf_GetColonistsCount('Otroyphus')
+GO
 
 --19. Change Journey Purpose 
 
