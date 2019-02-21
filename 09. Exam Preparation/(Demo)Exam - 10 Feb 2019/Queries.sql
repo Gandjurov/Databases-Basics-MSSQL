@@ -207,8 +207,60 @@ SELECT dbo.udf_GetColonistsCount('Otroyphus')
 GO
 
 --19. Change Journey Purpose 
+CREATE PROCEDURE usp_ChangeJourneyPurpose(@JourneyId INT, @NewPurpose VARCHAR(30))
+AS
+BEGIN
+	DECLARE @CheckJourneyId INT = ( SELECT Id
+									  FROM Journeys
+									 WHERE Id = @JourneyId
+								  ) 
 
+	DECLARE @CheckPurpose VARCHAR(30) = (SELECT Purpose FROM Journeys WHERE Id = @JourneyId)
+
+	IF (@CheckJourneyId IS NULL)
+	BEGIN
+		RAISERROR ('The journey does not exist!', 16, 1)
+		RETURN
+	END
+
+	IF (@CheckPurpose = @NewPurpose)
+	BEGIN
+		RAISERROR ('You cannot change the purpose!', 16, 2)
+		RETURN
+	END
+
+	UPDATE Journeys
+	SET Purpose = @NewPurpose
+	WHERE Id = @CheckJourneyId
+END
+GO
+
+EXEC usp_ChangeJourneyPurpose 1, 'Technical'
+SELECT * FROM Journeys
+
+EXEC usp_ChangeJourneyPurpose 2, 'Educational'
+
+EXEC usp_ChangeJourneyPurpose 196, 'Technical'
 
 --20. Deleted Journeys 
+CREATE TABLE DeletedJourneys
+(
+	Id INT,
+	JourneyStart DATETIME,
+	JourneyEnd DATETIME,
+	Purpose VARCHAR(11),
+	DestinationSpaceportId INT,
+	SpaceshipId INT
+)
+GO
 
+CREATE TRIGGER tr_DeletedJourneys ON Journeys AFTER DELETE
+AS
+INSERT INTO DeletedJourneys (Id, JourneyStart, JourneyEnd, Purpose, DestinationSpaceportId, SpaceshipId)
+	SELECT Id, JourneyStart, JourneyEnd, Purpose, DestinationSpaceportId, SpaceshipId FROM deleted
 
+DELETE FROM TravelCards
+WHERE JourneyId = 1
+
+DELETE FROM Journeys
+WHERE Id =  1
