@@ -78,4 +78,6 @@ INSERT INTO Subjects([Name], Lessons) VALUES
 ('Sports',  9)
 
 --03. Update
-
+UPDATE StudentsSubjects
+   SET Grade = 6.00
+ WHERE Grade >= 5.50
