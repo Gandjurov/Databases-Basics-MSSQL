@@ -80,4 +80,8 @@ INSERT INTO Subjects([Name], Lessons) VALUES
 --03. Update
 UPDATE StudentsSubjects
    SET Grade = 6.00
- WHERE Grade >= 5.50
+ WHERE Grade >= 5.50 AND SubjectId IN (1, 2)
+
+--04. Delete
+DELETE FROM StudentsTeachers
+WHERE TeacherId IN (SELECT Id FROM Teachers WHERE Phone LIKE '%72%')
