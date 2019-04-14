@@ -102,10 +102,26 @@ SELECT FirstName + ' ' + ISNULL(MiddleName, '') + ' ' + LastName AS [Full Name],
 ORDER BY FirstName, LastName, [Address]
 
 --07. 42 Phones
+SELECT FirstName, [Address], Phone
+  FROM Students
+ WHERE Phone LIKE '42%' AND MiddleName IS NOT NULL
+ORDER BY FirstName
 
 --08. Students Teachers
+SELECT FirstName, LastName, COUNT(st.StudentId) AS TeachersCount
+  FROM Students AS s
+  JOIN StudentsTeachers AS st ON st.StudentId = s.Id
+GROUP BY s.FirstName, s.LastName
 
 --09. Subjects with Students
+SELECT t.FirstName + ' ' + t.LastName AS [Name], 
+	   s.Name + '-' + CAST(s.Lessons AS NVARCHAR(5)) AS Subjects,
+	   COUNT(ss.StudentId) AS Students
+  FROM Teachers AS t
+  JOIN Subjects AS s ON s.Id = t.SubjectId
+  JOIN StudentsTeachers AS ss ON ss.StudentId = t.Id
+GROUP BY t.FirstName, t.LastName, s.Name, s.Lessons
+ORDER BY COUNT(ss.StudentId) DESC, [Name], Subjects
 
 --10. Students to Go
 
