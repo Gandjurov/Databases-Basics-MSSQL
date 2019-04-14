@@ -85,3 +85,46 @@ UPDATE StudentsSubjects
 --04. Delete
 DELETE FROM StudentsTeachers
 WHERE TeacherId IN (SELECT Id FROM Teachers WHERE Phone LIKE '%72%')
+
+DELETE FROM Teachers
+WHERE Phone LIKE '%72%'
+
+--05. Teen Students
+SELECT FirstName, LastName, Age
+  FROM Students
+ WHERE Age >= 12
+ORDER BY FirstName, LastName
+
+--06. Cool Addresses
+SELECT FirstName + ' ' + ISNULL(MiddleName, '') + ' ' + LastName AS [Full Name], [Address]
+  FROM Students
+ WHERE [Address] LIKE '%Road%'
+ORDER BY FirstName, LastName, [Address]
+
+--07. 42 Phones
+
+--08. Students Teachers
+
+--09. Subjects with Students
+
+--10. Students to Go
+
+--11. Busiest Teachers
+
+--12. Top Students
+
+--13. Second Highest Grade
+
+--14. Not So In The Studying
+
+--15. Top Student per Teacher
+
+--16. Average Grade per Subject
+
+--17. Exams Information
+
+--18. Exam Grades
+
+--19. Exclude from school
+
+--20. Deleted Student
