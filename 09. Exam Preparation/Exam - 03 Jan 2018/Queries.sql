@@ -143,17 +143,258 @@ SELECT chp.Name AS [Name], chp.Class AS [Class]
  ORDER BY chp.Name, chp.Class
 
 --12.Age Groups Revenue
+SELECT CASE 
+	   WHEN c.BirthDate BETWEEN '1970' AND '1980'
+			THEN '70''s'
+	   WHEN c.BirthDate BETWEEN '1980' AND '1990'
+			THEN '80''s'
+	   WHEN c.BirthDate BETWEEN '1990' AND '2000'
+			THEN '90''s'
+	   WHEN c.BirthDate NOT BETWEEN '1970' AND '2000'
+			THEN 'Others'
+       END AS [AgeGroup],
+	   SUM(o.Bill) AS Revenue,
+	   AVG(o.TotalMileage) AS AverageMileage
+  FROM Clients AS c
+LEFT JOIN Orders AS o ON o.ClientId = c.Id
+  JOIN Vehicles AS v ON o.VehicleId = v.Id
+GROUP BY (CASE 
+	   WHEN c.BirthDate BETWEEN '1970' AND '1980'
+			THEN '70''s'
+	   WHEN c.BirthDate BETWEEN '1980' AND '1990'
+			THEN '80''s'
+	   WHEN c.BirthDate BETWEEN '1990' AND '2000'
+			THEN '90''s'
+	   WHEN c.BirthDate NOT BETWEEN '1970' AND '2000'
+			THEN 'Others'
+       END )
+ORDER BY AgeGroup
 
 --13.Consumption in Mind
+SELECT m.Manufacturer AS [Manufacturer], AVG(m.Consumption) AS [AverageConsumption]
+FROM
+  (SELECT TOP 7
+     m.Id, COUNT(o.VehicleId) AS [OrdersCount]
+   FROM Orders o
+     JOIN Vehicles v ON o.VehicleId = v.Id
+     JOIN Models m ON v.ModelId = m.Id
+   GROUP BY m.Id
+   ORDER BY COUNT(o.VehicleId) DESC
+  ) AS mostOrdered
+  JOIN Models m ON m.Id = mostOrdered.Id
+GROUP BY m.Manufacturer
+HAVING AVG(m.Consumption) BETWEEN 5 AND 15
 
 --14. Debt Hunter
+WITH cte_Ranked (ClientName, Bill, Email, TownName, RANK, ClientId) AS
+(
+    SELECT
+      CONCAT(c.FirstName, ' ', c.LastName) AS [Category Name],
+      o.Bill,
+      c.Email,
+      t.Name,
+      DENSE_RANK()
+      OVER ( PARTITION BY t.Id
+        ORDER BY o.Bill DESC )             AS RANK,
+      c.Id
+    FROM Towns t
+      JOIN Orders o
+        ON t.Id = o.TownId
+      JOIN Clients c
+        ON o.ClientId = c.Id
+    WHERE DATEDIFF(DAY, c.CardValidity, o.CollectionDate) > 0 AND o.Bill IS NOT NULL
+    GROUP BY t.Id, o.Bill, CONCAT(c.FirstName, ' ', c.LastName), t.Name, c.Email, c.Id
+)
+
+SELECT
+  cte.ClientName AS [Category Name],
+  cte.Email      AS [Email],
+  cte.Bill       AS [Bill],
+  cte.TownName   AS [Town]
+FROM cte_ranked AS cte
+WHERE cte.RANK = 1 OR cte.RANK = 2
+ORDER BY cte.TownName, cte.Bill, cte.ClientId
 
 --15. Town Statistics
+SELECT t.Name, mp.MelaPercent, fp.FemalePercent
+FROM Towns AS t
+LEFT JOIN (SELECT
+      t.Id,
+      (COUNT(*) * 100) / tc.TotalCount AS [MelaPercent]
+    FROM Clients AS c
+      JOIN Orders o
+        ON c.Id = o.ClientId
+     FULL JOIN Towns t
+        ON o.TownId = t.Id
+      JOIN
+      (
+        SELECT
+          t.Name   AS [TownName],
+          COUNT(*) AS [TotalCount]
+        FROM Clients AS c
+          JOIN Orders o
+            ON c.Id = o.ClientId
+         FULL JOIN Towns t
+            ON o.TownId = t.Id
+        GROUP BY t.Name
+      ) tc
+        ON tc.TownName = t.Name
+    WHERE c.Gender = 'M'
+    GROUP BY t.Id, tc.TotalCount) AS mp ON mp.Id = t.Id
+LEFT JOIN (SELECT
+      t.Id,
+      (COUNT(*) * 100) / tc.TotalCount AS [FemalePercent]
+    FROM Clients AS c
+      JOIN Orders o
+        ON c.Id = o.ClientId
+     FULL JOIN Towns t
+        ON o.TownId = t.Id
+      JOIN
+      (
+        SELECT
+          t.Name   AS [TownName],
+          COUNT(*) AS [TotalCount]
+        FROM Clients AS c
+          JOIN Orders o
+            ON c.Id = o.ClientId
+         FULL JOIN Towns t
+            ON o.TownId = t.Id
+        GROUP BY t.Name
+      ) tc
+        ON tc.TownName = t.Name
+    WHERE c.Gender = 'F'
+    GROUP BY t.Id, tc.TotalCount) as fp ON  fp.Id = t.Id
+ORDER BY t.Name, t.Id
 
 --16. Home Sweet Home
+WITH CTE_C (ReturnOfficeId, OfficeId, VehicleId, Manufacturer, Model)
+AS
+(
+    SELECT
+      W.ReturnOfficeId,
+      W.OfficeId,
+      W.Id,
+      W.Manufacturer,
+      W.Model
+    FROM
+      (SELECT
+         DENSE_RANK()
+         OVER ( PARTITION BY V.Id
+           ORDER BY O.CollectionDate DESC ) AS [RANK],
+         O.ReturnOfficeId,
+         V.OfficeId,
+         V.Id,
+         M.Manufacturer,
+         M.Model
+       FROM Models AS M
+         JOIN Vehicles AS V
+           ON M.Id = V.ModelId
+         LEFT JOIN Orders AS O
+           ON O.VehicleId = V.Id) AS W
+    WHERE W.RANK = 1
+)
+
+SELECT
+  CONCAT(C.Manufacturer, ' - ', C.Model) AS [Vehicle],
+  CASE
+  WHEN (SELECT COUNT(*)
+        FROM Orders
+        WHERE VehicleId = C.VehicleId) = 0 OR C.OfficeId = C.ReturnOfficeId
+    THEN 'home'
+  WHEN C.ReturnOfficeId IS NULL
+    THEN 'on a rent'
+  WHEN C.OfficeId <> C.ReturnOfficeId
+    THEN (SELECT CONCAT([To].Name, ' - ', [Of].Name)
+          FROM Offices AS [Of]
+            JOIN Towns AS [To]
+              ON [To].Id = [Of].TownId
+          WHERE C.ReturnOfficeId = [Of].Id)
+  END                                    AS [Location]
+FROM CTE_C AS C
+ORDER BY Vehicle, C.VehicleId
 
 --17. Find My Ride
+CREATE FUNCTION udf_CheckForVehicle(@townName NVARCHAR(50), @seatsNumber INT)
+  RETURNS NVARCHAR(MAX)
+AS
+  BEGIN
+    DECLARE @result NVARCHAR(MAX) = (SELECT TOP 1 o.Name + ' - ' + m2.Model
+                                     FROM Towns AS t
+                                       JOIN Offices o
+                                         ON t.Id = o.TownId
+                                       JOIN Vehicles v
+                                         ON o.Id = v.OfficeId
+                                       JOIN Models m2
+                                         ON v.ModelId = m2.Id
+                                     WHERE t.Name = @townName AND m2.Seats = @seatsNumber
+                                     GROUP BY o.Name, m2.Model
+                                     ORDER BY o.Name ASC)
+
+    IF (@result IS NULL)
+      BEGIN
+        RETURN 'NO SUCH VEHICLE FOUND'
+      END
+
+    RETURN @result
+END
 
 --18. Move a Vehicle
+CREATE PROCEDURE usp_MoveVehicle(@vehicleId INT, @officeId INT)
+AS
+  BEGIN
+    BEGIN TRANSACTION
+    DECLARE @officePlaces INT = (
+      SELECT ParkingPlaces
+      FROM Offices
+      WHERE Id = @officeId
+    )
+
+    DECLARE @currentPlaces INT = (
+      SELECT count(v.OfficeId)
+      FROM Vehicles v
+        JOIN Offices o
+          ON v.OfficeId = o.Id
+      WHERE o.Id = @officeId
+      GROUP BY o.Name
+    )
+
+    IF (@officePlaces IS NULL OR @currentPlaces IS NULL OR @currentPlaces >= @officePlaces)
+      BEGIN
+        ROLLBACK;
+        RAISERROR ('Not enough room in this office!', 16, 1);
+      END
+
+    UPDATE Vehicles
+    SET OfficeId = @officeId
+    WHERE Id = @vehicleId
+
+    COMMIT;
+END
 
 --19. Move the Tally
+CREATE TRIGGER TR_AddMileage
+  ON Orders
+  AFTER UPDATE
+AS
+  BEGIN
+    DECLARE @newTotalMileage INT = (
+      SELECT TotalMileage
+      FROM inserted
+    )
+    DECLARE @vehicleId INT = (
+      SELECT VehicleId
+      FROM inserted
+    )
+
+    DECLARE @oldTotalMileage INT = (
+      SELECT TotalMileage
+      FROM deleted
+    )
+
+    IF (@oldTotalMileage IS NULL AND @vehicleId IS NOT NULL)
+      BEGIN
+        UPDATE Vehicles
+        SET Mileage += @newTotalMileage
+        WHERE Id = @vehicleId
+      END
+END
