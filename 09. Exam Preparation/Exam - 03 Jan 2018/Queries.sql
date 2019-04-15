@@ -80,5 +80,54 @@ UPDATE Models
  WHERE Consumption > 20
 
 --04.Delete 
+DELETE FROM Orders
+ WHERE ReturnDate IS NULL
 
---
+--5.Showroom
+SELECT Manufacturer, Model
+  FROM Models
+ORDER BY Manufacturer, Id DESC
+
+--6.Y Generation
+SELECT FirstName, LastName
+  FROM Clients
+ WHERE DATEPART(YEAR, BirthDate) BETWEEN '1977' AND '1994'
+ORDER BY FirstName, LastName, Id
+
+--7.Spacious Office
+SELECT t.Name AS [Town Name], o.Name AS [OfficeName], o.ParkingPlaces AS [ParkingPlaces]
+  FROM Offices AS o
+  JOIN Towns AS t ON t.Id = o.TownId
+ WHERE o.ParkingPlaces > 25
+ORDER BY t.Name, o.Name
+
+--8.Available Vehicles
+SELECT m.Model, m.Seats, v.Mileage
+  FROM Vehicles AS v
+  JOIN Models AS m ON m.Id = v.ModelId
+ WHERE v.Id != ALL(
+					SELECT VehicleId FROM Orders WHERE ReturnDate IS NULL
+				  )
+ORDER BY v.Mileage, m.Seats DESC, v.ModelId
+
+--9.Offices per Town
+
+--10.Buyers Best Choice 
+
+--11.Kinda Person
+
+--12.Age Groups Revenue
+
+--13.Consumption in Mind
+
+--14. Debt Hunter
+
+--15. Town Statistics
+
+--16. Home Sweet Home
+
+--17. Find My Ride
+
+--18. Move a Vehicle
+
+--19. Move the Tally
