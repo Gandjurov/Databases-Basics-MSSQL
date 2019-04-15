@@ -111,10 +111,36 @@ SELECT m.Model, m.Seats, v.Mileage
 ORDER BY v.Mileage, m.Seats DESC, v.ModelId
 
 --9.Offices per Town
+SELECT t.Name AS TownName, COUNT(t.Id) AS OfficesNumber 
+  FROM Towns AS t
+  JOIN Offices AS o ON o.TownId = t.Id
+GROUP BY t.Name, t.Id
+ORDER BY OfficesNumber DESC, TownName
 
 --10.Buyers Best Choice 
+SELECT m.Manufacturer AS [Manufacturer], m.Model AS [Model], COUNT(o.VehicleId) AS [TimesOrdered]
+  FROM Vehicles AS v
+  JOIN Models AS m ON v.ModelId = m.Id 
+LEFT JOIN Orders AS o ON v.Id = o.VehicleId
+GROUP BY m.Manufacturer, m.Model
+ORDER BY TimesOrdered DESC, Manufacturer DESC, Model ASC
 
 --11.Kinda Person
+WITH chp AS
+(SELECT c.FirstName + ' ' + c.LastName AS [Name],
+	   m.Class AS [Class],
+	   DENSE_RANK() OVER (PARTITION BY c.FirstName + ' ' + c.LastName 
+			ORDER BY COUNT(m.Class) DESC ) AS rn
+  FROM Clients AS c
+  JOIN Orders AS o ON o.ClientId = c.Id
+  JOIN Vehicles AS v ON v.Id = o.VehicleId
+  JOIN Models AS m ON m.Id = v.ModelId
+GROUP BY c.FirstName + ' ' + c.LastName, m.Class)
+
+SELECT chp.Name AS [Name], chp.Class AS [Class]
+  FROM chp
+ WHERE rn = 1 AND chp.Class IS NOT NULL
+ ORDER BY chp.Name, chp.Class
 
 --12.Age Groups Revenue
 
