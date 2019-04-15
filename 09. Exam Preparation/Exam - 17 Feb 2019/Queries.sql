@@ -116,24 +116,55 @@ GROUP BY s.FirstName, s.LastName
 --09. Subjects with Students
 SELECT t.FirstName + ' ' + t.LastName AS [Name], 
 	   s.Name + '-' + CAST(s.Lessons AS NVARCHAR(5)) AS Subjects,
-	   COUNT(ss.StudentId) AS Students
+	   COUNT(st.TeacherId) AS Students
   FROM Teachers AS t
   JOIN Subjects AS s ON s.Id = t.SubjectId
-  JOIN StudentsTeachers AS ss ON ss.StudentId = t.Id
+  JOIN StudentsTeachers AS st ON st.TeacherId = t.Id
 GROUP BY t.FirstName, t.LastName, s.Name, s.Lessons
-ORDER BY COUNT(ss.StudentId) DESC, [Name], Subjects
+ORDER BY COUNT(st.TeacherId) DESC, [Name], Subjects
 
---10. Students to Go
+--10. Students to Go (
+SELECT FirstName + ' ' + LastName AS [Full Name]
+  FROM Students AS s
+FULL JOIN StudentsExams AS se ON se.StudentId = s.Id
+ WHERE se.Grade IS NULL
+ORDER BY [Full Name]
 
 --11. Busiest Teachers
+SELECT TOP(10) FirstName, LastName, COUNT(st.StudentId) AS StudentsCount
+  FROM Teachers AS t
+  JOIN StudentsTeachers AS st ON st.TeacherId = t.Id
+GROUP BY FirstName, LastName
+ORDER BY StudentsCount DESC, FirstName, LastName
 
 --12. Top Students
+SELECT TOP(10) FirstName, LastName, FORMAT(AVG(se.Grade), 'N2') AS [Grade]
+  FROM Students AS s
+  JOIN StudentsExams AS se ON se.StudentId = s.Id
+GROUP BY FirstName, LastName
+ORDER BY [Grade] DESC, FirstName, LastName
 
 --13. Second Highest Grade
+SELECT k.FirstName, k.LastName, k.Grade
+  FROM (
+       SELECT FirstName, LastName, Grade,
+			ROW_NUMBER() OVER (PARTITION BY FirstName, LastName ORDER BY Grade DESC) AS RowNumber
+		 FROM Students AS s
+		 JOIN StudentsSubjects AS ss ON ss.StudentId = s.Id
+	   ) AS k
+WHERE k.RowNumber = 2
+ORDER BY FirstName, LastName
 
 --14. Not So In The Studying
+SELECT FirstName + ' ' + ISNULL(MiddleName + ' ', '') + LastName AS [Full Name]
+  FROM Students AS st
+LEFT JOIN StudentsSubjects AS ss ON ss.StudentId = st.Id
+LEFT JOIN Subjects AS s ON s.Id = ss.SubjectId
+WHERE ss.SubjectId IS NULL
+ORDER BY [Full Name]
 
 --15. Top Student per Teacher
+
 
 --16. Average Grade per Subject
 
