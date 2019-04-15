@@ -212,7 +212,71 @@ GROUP BY k.Quarter, k.SubjectName
 ORDER BY k.Quarter
 
 --18. Exam Grades
+GO
+CREATE FUNCTION udf_ExamGradesToUpdate(@studentId INT, @grade DECIMAL(15,2))
+RETURNS VARCHAR(MAX)
+AS
+BEGIN
+
+DECLARE @studentExist INT = (SELECT TOP(1) StudentId 
+									 FROM StudentsExams  
+									 WHERE StudentId = @studentId);
+
+IF @studentExist IS NULL
+BEGIN
+RETURN ('The student with provided id does not exist in the school!')
+END
+
+IF @grade > 6.00
+BEGIN
+RETURN ('Grade cannot be above 6.00!')
+END
+
+DECLARE @studentFirstName NVARCHAR(20) = (SELECT TOP(1) FirstName 
+												  FROM Students 
+												  WHERE Id = @studentId);
+DECLARE @biggestGrade DECIMAL(15,2) = @grade + 0.50;
+DECLARE @count INT = (SELECT Count(Grade) 
+						FROM StudentsExams
+					   WHERE StudentId = @studentId AND Grade >= @grade AND Grade <= @biggestGrade)
+
+RETURN ('You have to update ' + CAST(@count AS nvarchar(10)) + ' grades for the student ' + @studentFirstName)
+END
 
 --19. Exclude from school
+GO
+CREATE PROC usp_ExcludeFromSchool @StudentId INT
+AS
+DECLARE @TargetStudentId INT = (SELECT Id FROM Students WHERE @StudentId = Id)
+
+IF (@TargetStudentId IS NULL)
+BEGIN
+	RAISERROR('This school has no student with the provided id!', 16, 1)
+	RETURN
+END
+
+DELETE FROM StudentsExams
+WHERE StudentId = @StudentId
+
+DELETE FROM StudentsSubjects
+WHERE StudentId = @StudentId
+
+DELETE FROM StudentsTeachers
+WHERE StudentId = @StudentId
+
+DELETE FROM Students
+WHERE Id = @StudentId
 
 --20. Deleted Student
+CREATE TABLE ExcludedStudents
+(
+StudentId INT, 
+StudentName VARCHAR(30)
+)
+
+GO
+CREATE TRIGGER tr_StudentsDelete ON Students
+INSTEAD OF DELETE
+AS
+INSERT INTO ExcludedStudents(StudentId, StudentName)
+		SELECT Id, FirstName + ' ' + LastName FROM deleted
